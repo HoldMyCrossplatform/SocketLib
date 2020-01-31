@@ -1,16 +1,18 @@
 package com.example.xplatformsocket
 
+import TimeResponse
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
-import com.example.socket.MessagesInterceptor
 import com.example.createApplicationScreenMessage
 import com.example.doSth
-import com.example.socket.handlers.PriceMessageHandler
-import com.example.socket.handlers.TimeMessageHandler
+import com.example.socket.SomeConnection
 import kotlinx.android.synthetic.main.activity_main.*
 import model.response.PriceResponse
+import java.sql.Time
+
+import com.example.socket.features.Time.TimeUpdateListener
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,22 +29,24 @@ class MainActivity : AppCompatActivity() {
         val st = SocketThing()
         st.connect()
 
-        st.requestTime(object : TimeMessageHandler.OnTimeMessageListener {
-            override fun onTimeMessage(time: String) {
+        val connection = SomeConnection(st)
+
+        connection.Price.requestPriceUpdate(object : Price.PriceUpdateListener{
+            override fun onPriceUpdate(priceResponse: PriceResponse) {
                 runOnUiThread {
-                    findViewById<TextView>(R.id.main_text).text = time
+                    main_text.text = priceResponse.message
                 }
             }
         })
 
-        st.requestPrice(object : PriceMessageHandler.OnPriceMessageListener {
-            override fun onPriceUpdate(time: PriceResponse) {
-                Log.d("Socket", time.toString())
-                runOnUiThread {
-                    findViewById<TextView>(R.id.secondary_text).text = time.message
+        secondary_text.setOnClickListener {
+            connection.Time.requestTimeUpdate(object : TimeUpdateListener {
+                override fun onPriceUpdate(timeResponse: TimeResponse) {
+                    runOnUiThread {
+                        secondary_text.text = timeResponse.time
+                    }
                 }
-            }
-        })
-
+            })
+        }
     }
 }

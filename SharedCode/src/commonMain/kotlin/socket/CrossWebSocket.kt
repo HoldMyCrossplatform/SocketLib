@@ -1,11 +1,19 @@
 package com.example.socket
 
 abstract class CrossWebSocket {
-    val messagesInterceptor = MessagesInterceptor()
+    private var listener: SocketMessageListener? = null
+
+    internal fun setListener(listener: SocketMessageListener){
+        this.listener = listener
+    }
 
     fun onMessage(message: String) {
-        messagesInterceptor.onMessage(message)
+        listener?.onMessage(message)
     }
 
     abstract fun sendMessage(message: String)
+
+    interface SocketMessageListener{
+        fun onMessage(message: String)
+    }
 }
